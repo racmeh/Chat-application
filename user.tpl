@@ -17,14 +17,15 @@
                     $('#messages').append("<li>Your browser doesn't support WebSockets.</li>");
                 }
             }
-            ws = new WebSocket('ws://localhost:8080/websocket');
+            ws = new WebSocket('ws://192.168.43.29:8080/websocket');
             ws.onopen = function(evt) {
                 $('#messages').append('<li>Connected to server</li>');
                 $('#btn2').hide();
                 $('#btn2').trigger("click");
             }
+            var str="";var str1="";var n=0;
             ws.onmessage = function(evt) {
-                $('#messages').append('<li>' + evt.data + '</li>');
+            $('#messages').append('<li>' + evt.data + '</li>');
             }
             $('#btn1').click(function(){
             var now2 = new Date(Date.now());
@@ -35,7 +36,10 @@
             var formatted = now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
             ws.send("Online");
             ws.send(formatted);
-            });            
+            });     
+            $('#btn3').click(function(){
+            ws.send("Offline1234abc5678def90ghij");
+            });
             $('#btn').click(function(){
             var now1 = new Date(Date.now());
             var formatted1 = now1.getHours() + ":" + now1.getMinutes() + ":" + now1.getSeconds();
@@ -43,6 +47,7 @@
             ws.send($('#ipt2').val());
             ws.send(formatted1);
             });
+            setTimeout(function(){ ws.close(); }, 3600000);
             ws.onclose = function()
             {
             $('#messages').append('<li>' + "Connection is closed..." + '</li>'); 
@@ -57,8 +62,8 @@
 
 <input id="ipt1" type="text" name="msg" value="msg" placeholder="Message">
 <input id="ipt2" type="text" name="rec" value="abc" placeholder="Receiver">
-<button id="btn">Send msg!</button><br/>
-
+<button id="btn">Send msg!</button><br/><br/>
+<button id="btn3">Signout</button><br/>
 <br/>
 <div id="messages"></div>
 </body>

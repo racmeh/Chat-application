@@ -2,6 +2,9 @@ from bottle import get, route, template, run, request
 from plugin import websocket
 from server import GeventWebSocketServer
 from pymongo import MongoClient
+from random import randint
+import signal
+import sys
 
 users=[]
 
@@ -21,6 +24,10 @@ def log():
 def adm():
     return template('admin')
 
+@route('/adm')
+def adm1():
+    return template('adm')
+
 @route('/superuser')
 def supusr():
     return template('superuser')
@@ -37,18 +44,33 @@ usr=[]
 dict={}
 dict1={}
 dict2={}
+
+
+def signal_handler(signal, frame):
+    print('You pressed Ctrl+C!')
+    client=MongoClient()
+    db=client.dtbs
+    db.usrinf3.delete_many({})
+    sys.exit(0)
+signal.signal(signal.SIGINT, signal_handler)
+print('Press Ctrl+C')
+
 @route('/websocket',apply=[websocket])
 def chat(ws):
     print (ws)
     client=MongoClient()
     db=client.dtbs
     strin=db.usrinf1.find()
+    strin1="0123456789xabcdefgx9876543210"
     for bla in strin:
         strin1=bla['Usr']
         break
+    if(strin1=="0123456789xabcdefgx9876543210"):
+        return
     print(strin1)
     db.usrinf1.drop()
     users.append(ws)
+    db.usrinf3.insert({"Usr":strin1})
     print(users)
     sender=strin1
     str=sender+" is active"
@@ -77,6 +99,8 @@ def chat(ws):
     if((sender in dict1)==False):
         dict1[sender]=[]
     if(user_on_off=='Online'):
+        print(dict[sender])
+        print(dict1[sender])
         for d in dict[sender]:
             c4=0
             ws.send(d)
@@ -92,14 +116,14 @@ def chat(ws):
             "message_status":"Message by "+dict1[sender][c1]+" was delivered to "+sender
             })
             c1=c1+1
-        for d in dict[sender]:
-            dict[sender].remove(d)
-        for d1 in dict1[sender]:
-            dict1[sender].remove(d1)
+        dict[sender].clear()
+        dict1[sender].clear()
+        print(dict[sender])
+        print(dict1[sender])
     print("abc")
     while(True):
         msg=ws.receive()
-        if(msg==None):
+        if(msg==None or msg=="Offline1234abc5678def90ghij"):
             break
         receiver=ws.receive()
         print(msg)
@@ -167,6 +191,7 @@ def chat(ws):
             break
     users.remove(ws)
     usr.remove(sender)
+    db.usrinf3.delete_one( { "Usr": strin1 } )
     db.Log.insert({
     "user_status":str1
     })
@@ -192,6 +217,7 @@ def ws_signlog(ws):
                 "Password":pwd,
                 "Status":stat
                 })
+                db.usrinf2.insert({"Usr":usrid})
                 db.usrinf1.insert({"Usr":usrid})
                 str5=usrnm+" signed up with User ID: "+usrid
                 db.Log.insert({"sign_up":str5})
@@ -210,5 +236,28 @@ def ws_signlog(ws):
                 ws.send("Wrong credentials, please try again!")
 
 
+@get('/ws_adm', apply=[websocket])
+def adm(ws):
+    client = MongoClient()
+    db = client.dtbs
+    while(True):
+        str1=ws.receive()
+        if(str1 is None):
+            break
+        if(str1=="Send"):
+            n=db.usrinf2.count() 
+            n1=db.usrinf3.count()   
+            ws.send("abc"+str(n)+":"+str(n1))
 
-run(host='localhost', port=8080, server=GeventWebSocketServer)
+@get('/refresh')
+def refresh():
+    client = MongoClient()
+    db = client.dtbs
+    db.Log.drop()
+    db.Main_coll.drop()
+    db.usrinf.drop()
+    db.usrinf1.drop()
+    db.usrinf2.drop()
+    db.usrinf3.drop()
+
+run(host='192.168.43.29', port=8080, server=GeventWebSocketServer)

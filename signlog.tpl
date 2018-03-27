@@ -11,7 +11,7 @@ $(document).ready(function() {
                     $('#messages').append("<li>Your browser doesn't support WebSockets.</li>");
                 }
             }
-            ws = new WebSocket('ws://localhost:8080/ws_signlog');
+            ws = new WebSocket('ws://192.168.43.29:8080/ws_signlog');
             ws.onopen = function(evt) {
                 $('#messages').append('<li>Connected to server</li>');
            }
@@ -53,7 +53,7 @@ $(document).ready(function() {
 <input id="pwd1" type="text" placeholder="Password" name="pwd1"><br/><br/>
 <input id="stat1" type="text" placeholder="Login" name="stat1"><br/><br/>
 <button id="btn1">Login</button><br/><br/>
-<input id="redirect" type="button" onclick="location.href='http://localhost:8080/user';" value="Redirect" />
+<input id="redirect" type="button" onclick="location.href='http://192.168.43.29:8080/user';" value="Redirect" />
 <div id="messages"></div>
 </body>
 </html>
