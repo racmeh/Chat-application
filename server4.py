@@ -60,17 +60,17 @@ def chat(ws):
     print (ws)
     client=MongoClient()
     db=client.dtbs
-    strin=db.usrinf1.find()
+    strin=db.usrinf1.find()#findind all documents
     strin1="0123456789xabcdefgx9876543210"
-    for bla in strin:
-        strin1=bla['Usr']
+    for val in strin:
+        strin1=val['Usr']
         break
-    if(strin1=="0123456789xabcdefgx9876543210"):
+    if(strin1=="0123456789xabcdefgx9876543210"):#checking if the user directly accesses chat page without login
         return
     print(strin1)
     db.usrinf1.drop()
     users.append(ws)
-    db.usrinf3.insert({"Usr":strin1})
+    db.usrinf3.insert({"Usr":strin1})#Number of online users
     print(users)
     sender=strin1
     str=sender+" is active"
@@ -79,35 +79,34 @@ def chat(ws):
     for u1 in usr:
         print (u1)
     collection=db.Log
-    collection=db.Main_coll
-
+    collection=db.Main_coll#creating collection
     db.Log.insert({
     "new_usr":"New User Enters"
     })
     db.Log.insert({
     "user_status":str
     })
-    db.Main_coll.insert({
+    db.Main_coll.insert({#Insering in main collection
     "new_usr":"New User Enters"
     })
     user_on_off=ws.receive()
     datetime1=ws.receive()
     c1=0
     c4=0
-    if((sender in dict)==False):
+    if((sender in dict)==False):#Checking if sender already in dictionary, it is used for multiple closing and opening from same account
         dict[sender]=[]
     if((sender in dict1)==False):
         dict1[sender]=[]
-    if(user_on_off=='Online'):
+    if(user_on_off=='Online'):#Checking if sender online
         print(dict[sender])
         print(dict1[sender])
         for d in dict[sender]:
             c4=0
-            ws.send(d)
-            ws.send("(Send by "+dict1[sender][c1]+" at "+datetime1+" )")
+            ws.send(d)#Sending pending messages
+            ws.send("(Send by "+dict1[sender][c1]+" at "+datetime1+" )")#sending Sent report
             for us in users:
                 if(usr[c4]==dict1[sender][c1]):
-                    us.send("(Received by "+sender+" at "+datetime1+" )")
+                    us.send("(Received by "+sender+" at "+datetime1+" )")#Sending delivered report to sender
                     break
                 c4=c4+1
             db.Main_coll.update({'info_for':dict1[sender][c1],'sender':dict1[sender][c1],'receiver':sender},{'$set':{'status':'Received'}})
@@ -116,14 +115,14 @@ def chat(ws):
             "message_status":"Message by "+dict1[sender][c1]+" was delivered to "+sender
             })
             c1=c1+1
-        dict[sender].clear()
+        dict[sender].clear()#clearing dictionary
         dict1[sender].clear()
         print(dict[sender])
         print(dict1[sender])
     print("abc")
     while(True):
-        msg=ws.receive()
-        if(msg==None or msg=="Offline1234abc5678def90ghij"):
+        msg=ws.receive()#receiving message from user
+        if(msg==None or msg=="Offline1234abc5678def90ghij"):#Checking if user has refreshed or closed tab
             break
         receiver=ws.receive()
         print(msg)
@@ -156,7 +155,7 @@ def chat(ws):
         "message_status":str2
         })
         if msg is not None:
-            ws.send(msg)
+            ws.send(msg)#Sending message to sender
             ws.send("(Send to "+receiver+" at "+datetime+" )")
             db.Log.insert({
             "message_status":"Message by "+sender+" was sent to "+receiver
@@ -164,12 +163,12 @@ def chat(ws):
             for u in users:
                 if(c>len(usr)-1):
                     break
-                if(usr[c]==receiver):
+                if(usr[c]==receiver):#checking for receiver in list
                     c2=1
                     print("usr "+usr[c])
                     print("rec "+receiver)
                     print(u)
-                    u.send(msg)
+                    u.send(msg)#if receiver found, message is send
                     datetime1=datetime
                     u.send("(Send by "+sender+" at "+datetime1+" )")
                     ws.send("(Received by "+receiver+" at "+datetime+" )")
@@ -180,8 +179,8 @@ def chat(ws):
                     })
                     break
                 c=c+1
-            if(c2==0):
-                dict[receiver].append(msg)
+            if(c2==0):#if receiver isnt found, that is, is inactive or doesn't have an account
+                dict[receiver].append(msg)#message is stored in a dictionary
                 dict1[receiver].append(sender)
             for s in dict[receiver]:
                 print(s)
@@ -189,10 +188,10 @@ def chat(ws):
                 print(s1)
         else:
             break
-    users.remove(ws)
+    users.remove(ws)#removing user, now offline
     usr.remove(sender)
-    db.usrinf3.delete_one( { "Usr": strin1 } )
-    db.Log.insert({
+    db.usrinf3.delete_one( { "Usr": strin1 } )#user now not in online users list
+    db.Log.insert({#inserting logged out status
     "user_status":str1
     })
 
@@ -215,7 +214,8 @@ def ws_signlog(ws):
                 "Username":usrnm,
                 "UserID":usrid,
                 "Password":pwd,
-                "Status":stat
+                "Status":stat,
+                "Type":"User"
                 })
                 db.usrinf2.insert({"Usr":usrid})#Used to later find out number of total users
                 db.usrinf1.insert({"Usr":usrid})
