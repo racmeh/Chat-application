@@ -1,5 +1,5 @@
 # About
 
-An anonymous chat application for over a local area network
+A 2 way real time chat application
 
-Technologies used: HTML, Python, jQuery, MongoDB
+Technologies used: HTML, Python, jQuery, Bottle.py, Web sockets, MongoDB
